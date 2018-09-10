@@ -1,0 +1,2 @@
+project_code: ""
+region: {{ environment_variable.AWS_DEFAULT_REGION | default("ap-southeast-2") }}

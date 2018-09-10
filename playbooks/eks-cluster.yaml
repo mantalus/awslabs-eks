@@ -1,0 +1,18 @@
+---
+- hosts: "localhost"
+  tasks:
+    - name: Run my CloudFormation stack
+      cloudformation:
+        stack_name: "{{ lookup('env','CFN_STACK_NAME') }}"
+        state: "{{ lookup('env','CFN_STATE') or 'present' }}"
+        region: "{{ lookup('env','AWS_DEFAULT_REGION') or 'ap-southeast-2' }}"
+        disable_rollback: true
+        template: "../templates/ecs-cluster.yaml"
+        template_parameters:
+          ALBSecurityGroupStack: "{{ lookup('env','ALB_STACK_NAME') }}"
+        tags:
+          Stack: "ansible-cloudformation"
+      register: logs
+
+    - debug:
+        var: logs

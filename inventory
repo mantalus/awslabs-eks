@@ -1,0 +1,2 @@
+[defaults]
+ansible_connection=local

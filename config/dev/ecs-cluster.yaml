@@ -1,0 +1,9 @@
+template_path: templates/ecs-cluster.yaml
+stack_name: {{ environment_variable.ECS_STACK_NAME }}
+on_failure: DELETE
+parameters:
+  LaunchType: Fargate
+  ALBSecurityGroupStack: {{ environment_variable.ALB_STACK_NAME }}
+stack_tags:
+  Name: Fargate Redirect Docker ECS
+  Billing: Stojan Enterprises

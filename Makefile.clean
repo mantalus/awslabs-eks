@@ -1,0 +1,20 @@
+SHELL := /bin/bash -e
+
+CLEAN_TARGETS := clean-vpc
+
+.PHONY: env-vars $(CLEAN_TARGETS)
+
+all-clean: $(CLEAN_TARGETS)
+
+clean-vpc: env-vars
+	@echo "--- Deploy $(ENVIRONMENT) eks-vpc cloudformation stack"
+	CFN_STATE=absent ansible-playbook ./playbooks/amazon-eks-vpc-sample.yaml
+
+# eks-cluster: env-vars eks-vpc
+# 	@echo "--- Deploy $(ENVIRONMENT) eks-cluster cloudformation stack"
+# 	CFN_STATE=absent  ansible-playbook ./playbooks/eks-cluster.yaml
+
+env-vars:
+ifndef ENVIRONMENT
+	$(error ENVIRONMENT is undefined)
+endif

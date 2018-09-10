@@ -1,0 +1,85 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  ClusterStack:
+    Type: String
+
+  ALBSecurityGroupStack:
+    Type: String
+
+  DesiredCount:
+    Type: Number
+    Default: 1
+
+Resources:
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /jenkins/ecs/${AWS::StackName}
+
+  FargateService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        Fn::ImportValue: !Sub ${ClusterStack}::Cluster
+      DesiredCount: !Ref DesiredCount
+      TaskDefinition: !Ref TaskDefinition
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - Fn::ImportValue: !Sub ${ALBSecurityGroupStack}::SecurityGroupECS
+          Subnets:
+            - !ImportValue infra-vpc-base::SubnetIdPublicAz1
+            - !ImportValue infra-vpc-base::SubnetIdPublicAz2
+            - !ImportValue infra-vpc-base::SubnetIdPublicAz3
+      LoadBalancers:
+        - ContainerName: jenkins
+          ContainerPort: 80
+          TargetGroupArn:
+            Fn::ImportValue: !Sub ${ALBSecurityGroupStack}::TargetGroup
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${AWS::StackName}
+      RequiresCompatibilities:
+        - FARGATE
+      Memory: 512
+      Cpu: 256
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: jenkins
+          Image: nginx
+          Essential: true
+          Memory: 256
+          PortMappings:
+            - ContainerPort: 80
+              HostPort: 80
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref LogGroup
+              awslogs-stream-prefix: !Ref AWS::StackName
+
+Outputs:
+  Service:
+    Value: !Ref FargateService

@@ -1,0 +1,25 @@
+SHELL = /bin/bash -e
+
+TEST_TARGETS := test-lint-yaml test-validate-cfn test-validate-shell
+
+.PHONY: test $(TEST_TARGETS)
+
+all-test: $(TEST_TARGETS)
+
+test-lint-yaml:
+	@echo "--- Test Lint YAML"
+	yamllint -s templates/
+
+test-validate-cfn:
+	@echo "--- Test Validate CloudFormation"
+	sceptre validate-template $(ENVIRONMENT) load-balancer
+	sceptre validate-template $(ENVIRONMENT) ecs-cluster
+
+test-validate-shell:
+	@echo "--- Test Validate Shell Scripts"
+	./scripts/shellcheck.sh
+
+env-vars:
+ifndef ENVIRONMENT
+	$(error ENVIRONMENT is undefined)
+endif

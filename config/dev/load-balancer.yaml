@@ -1,0 +1,9 @@
+template_path: templates/load-balancer.yaml
+stack_name: {{ environment_variable.ALB_STACK_NAME }}
+on_failure: DELETE
+parameters:
+  CertificateArn: {{ environment_variable.CERTIFICATE }}
+  AccessIpAddress: {{ environment_variable.CURRENT_IP }}
+stack_tags:
+  Name: Fargate Redirect Docker ECS
+  Billing: Stojan Enterprises

@@ -1,0 +1,9 @@
+template_path: templates/nginx.yaml
+stack_name: {{ environment_variable.NGINX_STACK_NAME }}
+on_failure: DELETE
+parameters:
+  ClusterStack: {{ environment_variable.ECS_STACK_NAME }}
+  ALBSecurityGroupStack: {{ environment_variable.ALB_STACK_NAME }}
+stack_tags:
+  Name: Fargate Redirect Docker ECS
+  Billing: Stojan Enterprises
