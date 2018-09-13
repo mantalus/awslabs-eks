@@ -162,6 +162,31 @@ Outputs:
     Description: Security group for the cluster control plane communication with worker nodes
     Value: !Join [ ",", [ !Ref ControlPlaneSecurityGroup ] ]
 
-  VpcId:
+  VPC:
     Description: The VPC Id
     Value: !Ref VPC
+
+  VpcId:
+    Export:
+      Name: !Sub ${AWS::StackName}::VpcId
+    Value: !Ref VPC
+
+  PublicSubnet01:
+    Export:
+      Name: !Sub ${AWS::StackName}::PublicSubnet01
+    Value: !Ref Subnet01
+
+  PublicSubnet02:
+    Export:
+      Name: !Sub ${AWS::StackName}::PublicSubnet02
+    Value: !Ref Subnet02
+
+  PublicSubnet03:
+    Export:
+      Name: !Sub ${AWS::StackName}::PublicSubnet03
+    Value: !Ref Subnet03
+
+  ControlPlaneSecurityGroup:
+    Export:
+      Name: !Sub ${AWS::StackName}::ControlPlaneSecurityGroup
+    Value: !Ref ControlPlaneSecurityGroup

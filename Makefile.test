@@ -1,23 +1,18 @@
 SHELL = /bin/bash -e
 
-TEST_TARGETS := test-lint-yaml test-validate-cfn test-validate-shell
+TEST_TARGETS := test-yamllint test-cfnvalidate
 
 .PHONY: test $(TEST_TARGETS)
 
 all-test: $(TEST_TARGETS)
 
-test-lint-yaml:
-	@echo "--- Test Lint YAML"
-	yamllint -s templates/
-
-test-validate-cfn:
-	@echo "--- Test Validate CloudFormation"
-	sceptre validate-template $(ENVIRONMENT) load-balancer
-	sceptre validate-template $(ENVIRONMENT) ecs-cluster
-
-test-validate-shell:
-	@echo "--- Test Validate Shell Scripts"
-	./scripts/shellcheck.sh
+# test-cfnvalidate:
+# 	@echo "--- Validate Cloudformation"
+# 	./scripts/cfn_validate.sh
+#
+# test-yamllint:
+# 	@echo "--- Test Lint YAML"
+# 	yamllint -s templates/
 
 env-vars:
 ifndef ENVIRONMENT

@@ -1,18 +1,29 @@
 SHELL := /bin/bash -e
 
-CLEAN_TARGETS := clean-vpc
+CLEAN_TARGETS := clean-iam clean-cluster clean-worker clean-service
 
 .PHONY: env-vars $(CLEAN_TARGETS)
 
 all-clean: $(CLEAN_TARGETS)
 
-clean-vpc: env-vars
-	@echo "--- Deploy $(ENVIRONMENT) eks-vpc cloudformation stack"
-	CFN_STATE=absent ansible-playbook ./playbooks/amazon-eks-vpc-sample.yaml
+clean-vpc: env-vars clean-cluster clean-worker clean-iam
+	@echo "--- Clean $(ENVIRONMENT) eks-vpc cloudformation stack"
+	CFN_STATE=absent ansible-playbook ./playbooks/eks-vpc.yaml
 
-# eks-cluster: env-vars eks-vpc
-# 	@echo "--- Deploy $(ENVIRONMENT) eks-cluster cloudformation stack"
-# 	CFN_STATE=absent  ansible-playbook ./playbooks/eks-cluster.yaml
+clean-iam: env-vars clean-cluster clean-worker
+	@echo "--- Clean $(ENVIRONMENT) eks-iam cloudformation stack"
+	CFN_STATE=absent ansible-playbook ./playbooks/eks-iam.yaml
+
+clean-cluster: env-vars clean-worker
+	@echo "--- Clean $(ENVIRONMENT) eks-cluster cloudformation stack"
+	CFN_STATE=absent ansible-playbook ./playbooks/eks-cluster.yaml
+
+clean-worker: env-vars clean-service
+	@echo "--- Clean $(ENVIRONMENT) eks-worker cloudformation stack"
+	CFN_STATE=absent ansible-playbook ./playbooks/eks-worker.yaml
+
+clean-service: env-vars
+	 kubectl delete -f nginx-service.yaml
 
 env-vars:
 ifndef ENVIRONMENT

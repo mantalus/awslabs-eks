@@ -14,10 +14,11 @@ ifeq ($(BRANCH_NAME), master)
 	CFN_MAIN_STACK := true
 endif
 
-VPC_STACK_NAME = eks-vpc$(STACK_SUFFIX)
-EKS_STACK_NAME = eks-cluster$(STACK_SUFFIX)
-# ALB_STACK_NAME = nginx-alb$(STACK_SUFFIX)
-# NGINX_STACK_NAME = nginx-fargate$(STACK_SUFFIX)
+VPC_STACK_NAME        = eks-vpc$(STACK_SUFFIX)
+EKS_IAM_STACK_NAME    = eks-iam$(STACK_SUFFIX)
+EKS_STACK_NAME        = eks-cluster$(STACK_SUFFIX)
+EKS_WORKER_STACK_NAME = eks-worker$(STACK_SUFFIX)
+
 CURRENT_IP = $(shell curl -s checkip.amazonaws.com)/32
 
 export
@@ -37,5 +38,4 @@ test:
 clean:
 	@$(MAKE) -f Makefile.clean
 
-cert:
-	@$(MAKE) -f Makefile.cert
+include Makefile.deploy

@@ -1,32 +1,48 @@
 SHELL := /bin/bash -e
 
-DEPLOY_TARGETS := eks-vpc
+DEPLOY_TARGETS := eks-vpc eks-iam eks-cluster eks-worker eks-dashboard eks-config eks-nginx
 
 .PHONY: env-vars $(DEPLOY_TARGETS)
 
 all-deploy: $(DEPLOY_TARGETS)
 
-# load-balancer: env-vars
-# 	@echo "--- Deploy $(ENVIRONMENT) alb cloudformation stack"
-# 	sceptre launch-stack $(ENVIRONMENT) load-balancer; \
-# 	eval $$(sceptre describe-stack-outputs dev load-balancer --export=envvar); \
-# 	aws elbv2 create-listener --load-balancer-arn $$SCEPTRE_LoadBalancer --default-actions Type=redirect,RedirectConfig="{Protocol='HTTPS',Port='443',StatusCode='HTTP_301'}" --protocol HTTP --port 80
-
 eks-vpc: env-vars
 	@echo "--- Deploy $(ENVIRONMENT) eks-vpc cloudformation stack"
 	ansible-playbook ./playbooks/eks-vpc.yaml
 
-# eks-cluster: env-vars eks-vpc
-# 	@echo "--- Deploy $(ENVIRONMENT) eks-cluster cloudformation stack"
-# 	ansible-playbook ./playbooks/eks-cluster.yaml
+eks-iam: env-vars
+	@echo "--- Deploy $(ENVIRONMENT) eks-iam cloudformation stack"
+	ansible-playbook ./playbooks/eks-iam.yaml
 
-# nginx: env-vars load-balancer ecs-cluster
-# 	@echo "--- Deploy $(ENVIRONMENT) nginx cloudformation stack"
-# 	sceptre launch-stack $(ENVIRONMENT) nginx
-#
-# describe-outputs: env-vars load-balancer ecs-cluster nginx
-# 	@echo "--- Describe $(ENVIRONMENT) Load Balancer stack"
-# 	sceptre describe-stack-outputs dev load-balancer
+eks-cluster: env-vars eks-iam eks-vpc
+	@echo "--- Deploy $(ENVIRONMENT) eks-cluster cloudformation stack"
+	ansible-playbook ./playbooks/eks-cluster.yaml
+
+eks-worker: env-vars eks-iam eks-vpc
+	@echo "--- Deploy $(ENVIRONMENT) eks-worker cloudformation stack"
+	ansible-playbook ./playbooks/eks-worker.yaml
+
+eks-config: env-vars
+	mkdir -p ~/.kube && cat config-environment | \
+	EKS_ENDPOINT=$$(aws eks describe-cluster --name $(ENVIRONMENT)  --query cluster.endpoint --output text --region us-west-2) \
+	EKS_CERT_AUTH=$$(aws eks describe-cluster --name $(ENVIRONMENT)  --query cluster.certificateAuthority.data --output text --region us-west-2) \
+	mo > ~/.kube/config-$(ENVIRONMENT); \
+	cat aws-auth-cm.template | \
+	ROLE=$$(aws cloudformation describe-stacks --stack-name eks-worker --region us-west-2 --query "Stacks[0].Outputs[?OutputKey=='NodeInstanceRole'].OutputValue"  --output text) \
+	EC2PrivateDNSName="{{EC2PrivateDNSName}}" \
+	mo > ./aws-auth-cm.yaml && kubectl apply -f aws-auth-cm.yaml
+
+eks-nginx: env-vars eks-config
+	kubectl apply -f nginx.yaml
+	kubectl apply -f nginx-service.yaml
+
+eks-dashboard: env-vars eks-config
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/heapster.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/influxdb.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/rbac/heapster-rbac.yaml
+	kubectl apply -f eks-admin-service-account.yaml
+	kubectl apply -f eks-admin-cluster-role-binding.yaml
 
 env-vars:
 ifndef ENVIRONMENT

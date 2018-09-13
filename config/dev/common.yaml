@@ -1,0 +1,4 @@
+---
+KeyName: "{{ lookup('env','KEY_NAME') }}"
+NodeGroupName: labs
+AmiId: ami-08cab282f9979fc7a

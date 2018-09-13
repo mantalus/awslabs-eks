@@ -3,15 +3,15 @@
   vars_files:
     - "../config/{{ lookup('env','ENVIRONMENT') }}/common.yaml"
   tasks:
-    - name: EKS VPC Cloudformation Stack
+    - name: EKS IAM Cloudformation Stack
       cloudformation:
-        stack_name: "{{ lookup('env','VPC_STACK_NAME') }}"
+        stack_name: "{{ lookup('env','EKS_IAM_STACK_NAME') }}"
         state: "{{ lookup('env','CFN_STATE') or 'present' }}"
         region: "{{ lookup('env','AWS_DEFAULT_REGION') or 'us-west-2' }}"
         disable_rollback: true
-        template: "../templates/amazon-eks-vpc-sample.yaml"
+        template: "../templates/eks-iam.yaml"
         tags:
-          Stack: "{{ lookup('env','VPC_STACK_NAME') }}"
+          Stack: "{{ lookup('env','EKS_IAM_STACK_NAME') }}"
           CostCentre: "Cloud Services"
       register: logs
 
