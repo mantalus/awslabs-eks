@@ -1,4 +1,11 @@
 ---
 KeyName: "{{ lookup('env','KEY_NAME') }}"
+EKSClusterStack: "{{ lookup('env','EKS_STACK_NAME') }}"
+IAMStack: "{{ lookup('env','EKS_IAM_STACK_NAME') }}"
+VPCStack: "{{ lookup('env','VPC_STACK_NAME') }}"
+WorkerStack : "{{ lookup('env','EKS_WORKER_STACK_NAME') }}"
+State: "{{ lookup('env','CFN_STATE') or 'present' }}"
+Region: "{{ lookup('env','AWS_DEFAULT_REGION') or 'us-west-2' }}"
 NodeGroupName: labs
+Environment: "{{ lookup('env','ENVIRONMENT') }}"
 AmiId: ami-08cab282f9979fc7a

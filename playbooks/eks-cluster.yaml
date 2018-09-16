@@ -5,17 +5,19 @@
   tasks:
     - name: EKS Cluster Cloudformation Stack
       cloudformation:
-        stack_name: "{{ lookup('env','EKS_STACK_NAME') }}"
-        state: "{{ lookup('env','CFN_STATE') or 'present' }}"
-        region: "{{ lookup('env','AWS_DEFAULT_REGION') or 'us-west-2' }}"
+        stack_name: "{{ EKSClusterStack }}"
+        state: "{{ State }}"
+        region: "{{ Region }}"
         disable_rollback: false
         template: "../templates/eks-cluster.yaml"
         template_parameters:
-          IAMStack: "{{ lookup('env','EKS_IAM_STACK_NAME') }}"
-          VPCStack: "{{ lookup('env','VPC_STACK_NAME') }}"
+          IAMStack: "{{ IAMStack }}"
+          VPCStack: "{{ VPCStack }}"
         tags:
-          Stack: "{{ lookup('env','EKS_STACK_NAME') }}"
+          Stack: "{{ EKSClusterStack }}"
           CostCentre: "Cloud Services"
+      async: 3600
+      poll: 30
       register: logs
 
     - debug:

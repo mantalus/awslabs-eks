@@ -5,13 +5,13 @@
   tasks:
     - name: EKS IAM Cloudformation Stack
       cloudformation:
-        stack_name: "{{ lookup('env','EKS_IAM_STACK_NAME') }}"
-        state: "{{ lookup('env','CFN_STATE') or 'present' }}"
-        region: "{{ lookup('env','AWS_DEFAULT_REGION') or 'us-west-2' }}"
+        stack_name: "{{ IAMStack }}"
+        state: "{{ State }}"
+        region: "{{ Region }}"
         disable_rollback: true
         template: "../templates/eks-iam.yaml"
         tags:
-          Stack: "{{ lookup('env','EKS_IAM_STACK_NAME') }}"
+          Stack: "{{ IAMStack }}"
           CostCentre: "Cloud Services"
       register: logs
 

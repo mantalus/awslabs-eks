@@ -5,14 +5,15 @@
   tasks:
     - name: EKS VPC Cloudformation Stack
       cloudformation:
-        stack_name: "{{ lookup('env','VPC_STACK_NAME') }}"
-        state: "{{ lookup('env','CFN_STATE') or 'present' }}"
-        region: "{{ lookup('env','AWS_DEFAULT_REGION') or 'us-west-2' }}"
+        stack_name: "{{ VPCStack }}"
+        state: "{{ State }}"
+        region: "{{ Region }}"
         disable_rollback: true
         template: "../templates/amazon-eks-vpc-sample.yaml"
         tags:
-          Stack: "{{ lookup('env','VPC_STACK_NAME') }}"
+          Stack: "{{ VPCStack }}"
           CostCentre: "Cloud Services"
+          Test: "{{ AmiId }}"
       register: logs
 
     - debug:

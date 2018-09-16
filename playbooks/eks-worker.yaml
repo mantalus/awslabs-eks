@@ -5,19 +5,19 @@
   tasks:
     - name: EKS Worker Cloudformation Stack
       cloudformation:
-        stack_name: "{{ lookup('env','EKS_WORKER_STACK_NAME') }}"
-        state: "{{ lookup('env','CFN_STATE') or 'present' }}"
-        region: "{{ lookup('env','AWS_DEFAULT_REGION') or 'us-west-2' }}"
+        stack_name: "{{ WorkerStack }}"
+        state: "{{ State }}"
+        region: "{{ Region }}"
         disable_rollback: true
         template: "../templates/eks-worker.yaml"
         template_parameters:
-          VPCStack: "{{ lookup('env','VPC_STACK_NAME') }}"
-          ClusterStack: "{{ lookup('env', 'EKS_STACK_NAME') }}"
+          VPCStack: "{{ VPCStack }}"
+          ClusterStack: "{{ EKSClusterStack }}"
           KeyName: "{{ KeyName }}"
           NodeImageId: "{{ AmiId }}"
           NodeGroupName: "{{ NodeGroupName }}"
         tags:
-          Stack: "{{ lookup('env','EKS_WORKER_STACK_NAME') }}"
+          Stack: "{{ WorkerStack }}"
           KeyPair: "{{ KeyName }}"
           CostCentre: "Cloud Services"
           AmiId: "{{ AmiId }}"
